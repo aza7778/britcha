@@ -100,8 +100,8 @@ nav{flex-direction:column;overflow:visible;padding:8px 14px;flex:1}nav a{padding
  const small=async f=>{const b=await createImageBitmap(f),k=Math.min(1,1280/Math.max(b.width,b.height)),c=document.createElement("canvas");c.width=Math.round(b.width*k);c.height=Math.round(b.height*k);c.getContext("2d").drawImage(b,0,0,c.width,c.height);return{media_type:"image/jpeg",data:c.toDataURL("image/jpeg",0.8).split(",")[1]}};
  const call=async(input,o)=>{o=o||{};const messages=typeof input==="string"?[{role:"user",content:input}]:input;
   const images=o.images&&o.images.length?await Promise.all([...o.images].slice(0,5).map(small)):[];
-  let resp;try{resp=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages,images})})}catch(e){throw{code:"error"}}
-  if(!resp.ok)throw{code:resp.status===429?"rate_limited":"error"};
+  let resp;try{resp=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages,images})})}catch(e){throw{code:"error",message:"tarmoq xatosi"}}
+  if(!resp.ok){const t=await resp.text().catch(()=>"");throw{code:resp.status===429?"rate_limited":"error",message:resp.status+" "+t.replace(/\s+/g," ").slice(0,220)}}
   const d=await resp.json();return{text:d.text,truncated:false}};
  call.json=async(i,o)=>{const r=await call(i,o),t=r.text.replace(/```json|```/g,"").trim(),m=t.match(/[\[{][\s\S]*[\]}]/);return JSON.parse(m?m[0]:t)};
  call.limits=async()=>({images:true});
@@ -121,7 +121,7 @@ const pick=()=>words[Math.floor(Math.random()*words.length)];
 const msg=t=>{const m=$('#msg');if(m){m.style.display=t?'block':'none';m.textContent=t||''}};
 function speak(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='en-GB';const v=speechSynthesis.getVoices().find(v=>v.lang==='en-GB');if(v)u.voice=v;speechSynthesis.speak(u)}catch(e){}}
 async function ai(p,o){const s=window.claude&&await claude.use('sample');if(!s)throw {code:'na'};return s(p,o)}
-const aiErr=e=>e&&e.code==='not_granted'?'AI ruxsat berilmagan.':e&&e.code==='rate_limited'?'Juda tez-tez so\'rov. Biroz kuting.':e&&e.code==='na'?'AI bu yerda mavjud emas (saytni claude.ai orqali oching).':'Xatolik yuz berdi, qayta urinib ko\'ring.';
+const aiErr=e=>e&&e.code==='not_granted'?'AI ruxsat berilmagan.':e&&e.code==='rate_limited'?'Juda tez-tez so\'rov. Biroz kuting.':e&&e.code==='na'?'AI bu yerda mavjud emas (saytni claude.ai orqali oching).':'Xatolik yuz berdi, qayta urinib ko\'ring.'+(e&&e.message?' ['+e.message+']':'');
 const empty='<div class="card">Avval Vocabulary bo\'limida so\'z qo\'shing.</div>';
 let cur=null,lastText='',chat=[];
 const LV=()=>` Target CEFR level: ${st.get('level','A2')} (adjust vocabulary, grammar and complexity to this level).`;

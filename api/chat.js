@@ -2,6 +2,7 @@
 // API kalit kodda emas, Vercel'dagi GEMINI_API_KEY o'zgaruvchisida saqlanadi.
 module.exports = async (req, res) => {
   if (req.method !== "POST") { res.status(405).end(); return; }
+  if (!process.env.GEMINI_API_KEY) { res.status(500).send("GEMINI_API_KEY topilmadi (Vercel sozlamasida yo'q)"); return; }
   const { messages, images } = req.body || {};
   if (!Array.isArray(messages) || !messages.length) { res.status(400).send("bad request"); return; }
   const contents = messages.slice(-20).map(m => ({
